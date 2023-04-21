@@ -40,7 +40,7 @@ type Server struct {
 func (s *Server) IsUp() bool {
 	t := time.Now()
 	defer func() {
-		s.TLog.Logf("Check backend is up took %s", time.Now().Sub(t).String())
+		s.TLog.Logf("Check backend is up took %s", time.Since(t).String())
 	}()
 
 	u, _ := s.GetURL()
@@ -71,7 +71,7 @@ func (s *Server) IsUp() bool {
 func (s *Server) ICMPPingAndJitter(count int, srcIp, network string) (float64, float64, error) {
 	t := time.Now()
 	defer func() {
-		s.TLog.Logf("ICMP ping took %s", time.Now().Sub(t).String())
+		s.TLog.Logf("ICMP ping took %s", time.Since(t).String())
 	}()
 
 	if s.NoICMP {
@@ -131,7 +131,7 @@ func (s *Server) ICMPPingAndJitter(count int, srcIp, network string) (float64, f
 func (s *Server) PingAndJitter(count int) (float64, float64, error) {
 	t := time.Now()
 	defer func() {
-		s.TLog.Logf("TCP ping took %s", time.Now().Sub(t).String())
+		s.TLog.Logf("TCP ping took %s", time.Since(t).String())
 	}()
 
 	u, err := s.GetURL()
@@ -159,9 +159,8 @@ func (s *Server) PingAndJitter(count int) (float64, float64, error) {
 		}
 		io.Copy(ioutil.Discard, resp.Body)
 		resp.Body.Close()
-		end := time.Now()
 
-		pings = append(pings, float64(end.Sub(start).Milliseconds()))
+		pings = append(pings, float64(time.Since(start).Milliseconds()))
 	}
 
 	// discard first result due to handshake overhead
@@ -191,7 +190,7 @@ func (s *Server) PingAndJitter(count int) (float64, float64, error) {
 func (s *Server) Download(silent bool, useBytes, useMebi bool, requests int, chunks int, duration time.Duration) (float64, int, error) {
 	t := time.Now()
 	defer func() {
-		s.TLog.Logf("Download took %s", time.Now().Sub(t).String())
+		s.TLog.Logf("Download took %s", time.Since(t).String())
 	}()
 
 	counter := NewCounter()
@@ -283,7 +282,7 @@ Loop:
 func (s *Server) Upload(noPrealloc, silent, useBytes, useMebi bool, requests int, uploadSize int, duration time.Duration) (float64, int, error) {
 	t := time.Now()
 	defer func() {
-		s.TLog.Logf("Upload took %s", time.Now().Sub(t).String())
+		s.TLog.Logf("Upload took %s", time.Since(t).String())
 	}()
 
 	counter := NewCounter()
@@ -376,7 +375,7 @@ Loop:
 func (s *Server) GetIPInfo(distanceUnit string) (*GetIPResult, error) {
 	t := time.Now()
 	defer func() {
-		s.TLog.Logf("Get IP info took %s", time.Now().Sub(t).String())
+		s.TLog.Logf("Get IP info took %s", time.Since(t).String())
 	}()
 
 	var ipInfo GetIPResult
@@ -426,7 +425,7 @@ func (s *Server) GetIPInfo(distanceUnit string) (*GetIPResult, error) {
 func (s *Server) GetURL() (*url.URL, error) {
 	t := time.Now()
 	defer func() {
-		s.TLog.Logf("Parse server URL took %s", time.Now().Sub(t).String())
+		s.TLog.Logf("Parse server URL took %s", time.Since(t).String())
 	}()
 
 	u, err := url.Parse(s.Server)
