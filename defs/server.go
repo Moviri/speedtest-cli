@@ -66,17 +66,17 @@ func (s *Server) IsUp() bool {
 	return resp.StatusCode == http.StatusOK
 }
 
-// ICMPPingAndJitter pings the server via ICMP echos and calculate the average ping and jitter
-func (s *Server) ICMPPingAndJitter(count int, srcIp, network string) (float64, float64, error) {
+// PingAndJitter pings the server via ICMP echos or HTTP get requests and calculate the average ping and jitter
+func (s *Server) PingAndJitter(count int, srcIp, network string) (float64, float64, error) {
+	if s.NoICMP {
+		log.Debugf("Skipping ICMP for server %s, will use HTTP ping", s.Name)
+		return s.HttpPingAndJitter(count + 2)
+	}
+
 	t := time.Now()
 	defer func() {
 		s.TLog.Logf("ICMP ping took %s", time.Since(t).String())
 	}()
-
-	if s.NoICMP {
-		log.Debugf("Skipping ICMP for server %s, will use HTTP ping", s.Name)
-		return s.PingAndJitter(count + 2)
-	}
 
 	u, err := s.GetURL()
 	if err != nil {
@@ -97,21 +97,21 @@ func (s *Server) ICMPPingAndJitter(count int, srcIp, network string) (float64, f
 	if err := p.Run(); err != nil {
 		log.Debugf("Failed to ping target host: %s", err)
 		log.Debug("Will try TCP ping")
-		return s.PingAndJitter(count + 2)
+		return s.HttpPingAndJitter(count + 2)
 	}
 
 	stats := p.Statistics()
 	if len(stats.Rtts) == 0 {
 		s.NoICMP = true
 		log.Debugf("No ICMP pings returned for server %s (%s), trying TCP ping", s.Name, u.Hostname())
-		return s.PingAndJitter(count + 2)
+		return s.HttpPingAndJitter(count + 2)
 	}
 
 	return float64(stats.AvgRtt.Microseconds()) / 1000.0, float64(stats.StdDevRtt.Microseconds()) / 1000.0, nil
 }
 
-// PingAndJitter pings the server via accessing ping URL and calculate the average ping and jitter
-func (s *Server) PingAndJitter(count int) (float64, float64, error) {
+// HttpPingAndJitter pings the server via accessing ping URL and calculate the average ping and jitter
+func (s *Server) HttpPingAndJitter(count int) (float64, float64, error) {
 	t := time.Now()
 	defer func() {
 		s.TLog.Logf("TCP ping took %s", time.Since(t).String())
