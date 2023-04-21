@@ -173,7 +173,7 @@ func doSpeedTest(c *cli.Context, servers []defs.Server, telemetryServer defs.Tel
 				rep.Server.Name = currentServer.Name
 				rep.Server.URL = u.String()
 
-				rep.Client = report.Client{ispInfo.RawISPInfo}
+				rep.Client = report.Client{IPInfoResponse: ispInfo.RawISPInfo}
 				rep.Client.Readme = ""
 
 				reps_json = append(reps_json, rep)
