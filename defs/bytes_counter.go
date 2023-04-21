@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"sync"
 	"time"
 )
@@ -143,6 +144,21 @@ func getAvg(vals []float64) float64 {
 	}
 
 	return total / float64(len(vals))
+}
+
+func getMeandAndStdDeviation(values []float64) (mean float64, stdDev float64) {
+	mean = 0.0
+	for _, duration := range values {
+		mean += duration
+	}
+	mean /= float64(len(values))
+	variance := 0.0
+	for _, duration := range values {
+		variance += math.Pow(duration-mean, 2)
+	}
+	variance /= float64(len(values))
+	stdDev = math.Sqrt(variance)
+	return mean, stdDev
 }
 
 // getRandomData returns an `length` sized array of random bytes

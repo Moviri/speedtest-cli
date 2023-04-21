@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"math"
 	"net/http"
 	"net/url"
 	"path"
@@ -102,29 +101,13 @@ func (s *Server) ICMPPingAndJitter(count int, srcIp, network string) (float64, f
 	}
 
 	stats := p.Statistics()
-
-	var lastPing, jitter float64
-	for idx, rtt := range stats.Rtts {
-		if idx != 0 {
-			instJitter := math.Abs(lastPing - float64(rtt.Milliseconds()))
-			if idx > 1 {
-				if jitter > instJitter {
-					jitter = jitter*0.7 + instJitter*0.3
-				} else {
-					jitter = instJitter*0.2 + jitter*0.8
-				}
-			}
-		}
-		lastPing = float64(rtt.Milliseconds())
-	}
-
 	if len(stats.Rtts) == 0 {
 		s.NoICMP = true
 		log.Debugf("No ICMP pings returned for server %s (%s), trying TCP ping", s.Name, u.Hostname())
 		return s.PingAndJitter(count + 2)
 	}
 
-	return float64(stats.AvgRtt.Milliseconds()), jitter, nil
+	return float64(stats.AvgRtt.Milliseconds()), float64(stats.StdDevRtt.Milliseconds()), nil
 }
 
 // PingAndJitter pings the server via accessing ping URL and calculate the average ping and jitter
@@ -168,22 +151,8 @@ func (s *Server) PingAndJitter(count int) (float64, float64, error) {
 		pings = pings[1:]
 	}
 
-	var lastPing, jitter float64
-	for idx, p := range pings {
-		if idx != 0 {
-			instJitter := math.Abs(lastPing - p)
-			if idx > 1 {
-				if jitter > instJitter {
-					jitter = jitter*0.7 + instJitter*0.3
-				} else {
-					jitter = instJitter*0.2 + jitter*0.8
-				}
-			}
-		}
-		lastPing = p
-	}
-
-	return getAvg(pings), jitter, nil
+	avg, jitter := getMeandAndStdDeviation(pings)
+	return avg, jitter, nil
 }
 
 // Download performs the actual download test
