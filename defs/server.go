@@ -107,7 +107,7 @@ func (s *Server) ICMPPingAndJitter(count int, srcIp, network string) (float64, f
 		return s.PingAndJitter(count + 2)
 	}
 
-	return float64(stats.AvgRtt.Milliseconds()), float64(stats.StdDevRtt.Milliseconds()), nil
+	return float64(stats.AvgRtt.Microseconds()) / 1000.0, float64(stats.StdDevRtt.Microseconds()) / 1000.0, nil
 }
 
 // PingAndJitter pings the server via accessing ping URL and calculate the average ping and jitter
@@ -143,7 +143,7 @@ func (s *Server) PingAndJitter(count int) (float64, float64, error) {
 		io.Copy(ioutil.Discard, resp.Body)
 		resp.Body.Close()
 
-		pings = append(pings, float64(time.Since(start).Milliseconds()))
+		pings = append(pings, float64(time.Since(start).Microseconds())/1000.0)
 	}
 
 	// discard first result due to handshake overhead
