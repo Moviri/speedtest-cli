@@ -11,8 +11,10 @@ type CSVReport struct {
 	Address   string    `csv:"Address"`
 	Ping      float64   `csv:"Ping"`
 	Jitter    float64   `csv:"Jitter"`
-	Download  float64   `csv:"Download"`
-	Upload    float64   `csv:"Upload"`
-	Share     string    `csv:"Share"`
-	IP        string    `csv:"IP"`
+	// Download bandwidth in bytes per second
+	Download int64 `csv:"Download"`
+	// Upload bandwidth in bytes per second
+	Upload int64  `csv:"Upload"`
+	Share  string `csv:"Share"`
+	IP     string `csv:"IP"`
 }

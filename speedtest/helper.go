@@ -25,6 +25,7 @@ import (
 const (
 	// the default ping count for measuring ping and jitter
 	pingCount = 10
+	MbpsToBps = 125000
 )
 
 // doSpeedTest is where the actual speed test happens
@@ -149,10 +150,10 @@ func doSpeedTest(c *cli.Context, servers []defs.Server, telemetryServer defs.Tel
 
 				rep.Name = currentServer.Name
 				rep.Address = u.String()
-				rep.Ping = math.Round(ping*100) / 100
-				rep.Jitter = math.Round(jitter*100) / 100
-				rep.Download = math.Round(downloadValue*100) / 100
-				rep.Upload = math.Round(uploadValue*100) / 100
+				rep.Ping = math.Round(ping*1000) / 1000
+				rep.Jitter = math.Round(jitter*1000) / 1000
+				rep.Download = int64(downloadValue * MbpsToBps)
+				rep.Upload = int64(uploadValue * MbpsToBps)
 				rep.Share = shareLink
 				rep.IP = ispInfo.RawISPInfo.IP
 
@@ -162,10 +163,10 @@ func doSpeedTest(c *cli.Context, servers []defs.Server, telemetryServer defs.Tel
 				var rep report.JSONReport
 				rep.Timestamp = time.Now()
 
-				rep.Ping = math.Round(ping*100) / 100
-				rep.Jitter = math.Round(jitter*100) / 100
-				rep.Download = math.Round(downloadValue*100) / 100
-				rep.Upload = math.Round(uploadValue*100) / 100
+				rep.Ping = math.Round(ping*1000) / 1000
+				rep.Jitter = math.Round(jitter*1000) / 1000
+				rep.Download = int64(downloadValue * MbpsToBps)
+				rep.Upload = int64(uploadValue * MbpsToBps)
 				rep.BytesReceived = bytesRead
 				rep.BytesSent = bytesWritten
 				rep.Share = shareLink
