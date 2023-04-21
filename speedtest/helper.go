@@ -72,14 +72,14 @@ func doSpeedTest(c *cli.Context, servers []defs.Server, telemetryServer defs.Tel
 			// skip ICMP if option given
 			currentServer.NoICMP = c.Bool(defs.OptionNoICMP)
 
-			p, jitter, err := currentServer.PingAndJitter(pingCount, c.String(defs.OptionSource), network)
+			ping, jitter, err := currentServer.PingAndJitter(pingCount, c.String(defs.OptionSource), network)
 			if err != nil {
 				log.Errorf("Failed to get ping and jitter: %s", err)
 				return err
 			}
 
 			if pb != nil {
-				pb.FinalMSG = fmt.Sprintf("Ping: %.2f ms\tJitter: %.2f ms\n", p, jitter)
+				pb.FinalMSG = fmt.Sprintf("Ping: %.2f ms\tJitter: %.2f ms\n", ping, jitter)
 				pb.Stop()
 			}
 
@@ -117,9 +117,9 @@ func doSpeedTest(c *cli.Context, servers []defs.Server, telemetryServer defs.Tel
 			if c.Bool(defs.OptionSimple) {
 				if c.Bool(defs.OptionBytes) {
 					useMebi := c.Bool(defs.OptionMebiBytes)
-					log.Warnf("Ping:\t%.2f ms\tJitter:\t%.2f ms\nDownload rate:\t%s\nUpload rate:\t%s", p, jitter, humanizeMbps(downloadValue, useMebi), humanizeMbps(uploadValue, useMebi))
+					log.Warnf("Ping:\t%.2f ms\tJitter:\t%.2f ms\nDownload rate:\t%s\nUpload rate:\t%s", ping, jitter, humanizeMbps(downloadValue, useMebi), humanizeMbps(uploadValue, useMebi))
 				} else {
-					log.Warnf("Ping:\t%.2f ms\tJitter:\t%.2f ms\nDownload rate:\t%.2f Mbps\nUpload rate:\t%.2f Mbps", p, jitter, downloadValue, uploadValue)
+					log.Warnf("Ping:\t%.2f ms\tJitter:\t%.2f ms\nDownload rate:\t%.2f Mbps\nUpload rate:\t%.2f Mbps", ping, jitter, downloadValue, uploadValue)
 				}
 			}
 
@@ -130,7 +130,7 @@ func doSpeedTest(c *cli.Context, servers []defs.Server, telemetryServer defs.Tel
 				extra.ServerName = currentServer.Name
 				extra.Extra = c.String(defs.OptionTelemetryExtra)
 
-				if link, err := sendTelemetry(telemetryServer, ispInfo, downloadValue, uploadValue, p, jitter, currentServer.TLog.String(), extra); err != nil {
+				if link, err := sendTelemetry(telemetryServer, ispInfo, downloadValue, uploadValue, ping, jitter, currentServer.TLog.String(), extra); err != nil {
 					log.Errorf("Error when sending telemetry data: %s", err)
 				} else {
 					shareLink = link
@@ -149,7 +149,7 @@ func doSpeedTest(c *cli.Context, servers []defs.Server, telemetryServer defs.Tel
 
 				rep.Name = currentServer.Name
 				rep.Address = u.String()
-				rep.Ping = math.Round(p*100) / 100
+				rep.Ping = math.Round(ping*100) / 100
 				rep.Jitter = math.Round(jitter*100) / 100
 				rep.Download = math.Round(downloadValue*100) / 100
 				rep.Upload = math.Round(uploadValue*100) / 100
@@ -162,7 +162,7 @@ func doSpeedTest(c *cli.Context, servers []defs.Server, telemetryServer defs.Tel
 				var rep report.JSONReport
 				rep.Timestamp = time.Now()
 
-				rep.Ping = math.Round(p*100) / 100
+				rep.Ping = math.Round(ping*100) / 100
 				rep.Jitter = math.Round(jitter*100) / 100
 				rep.Download = math.Round(downloadValue*100) / 100
 				rep.Upload = math.Round(uploadValue*100) / 100
