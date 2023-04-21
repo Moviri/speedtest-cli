@@ -15,9 +15,11 @@ type JSONReport struct {
 	BytesReceived int       `json:"bytes_received"`
 	Ping          float64   `json:"ping"`
 	Jitter        float64   `json:"jitter"`
-	Upload        float64   `json:"upload"`
-	Download      float64   `json:"download"`
-	Share         string    `json:"share"`
+	// Upload bandwidth in bytes per second
+	Upload int64 `json:"upload"`
+	// Download bandwidth in bytes per second
+	Download int64  `json:"download"`
+	Share    string `json:"share"`
 }
 
 // Server represents the speed test server's information

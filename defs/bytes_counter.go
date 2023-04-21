@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"sync"
 	"time"
 )
@@ -65,7 +66,7 @@ func (c *BytesCounter) SetUploadSize(uploadSize int) {
 
 // AvgBytes returns the average bytes/second
 func (c *BytesCounter) AvgBytes() float64 {
-	return float64(c.total) / time.Now().Sub(c.start).Seconds()
+	return float64(c.total) / time.Since(c.start).Seconds()
 }
 
 // AvgMbps returns the average mbits/second
@@ -122,7 +123,7 @@ func (c *BytesCounter) Total() int {
 
 // CurrentSpeed returns the current bytes/second
 func (c *BytesCounter) CurrentSpeed() float64 {
-	return float64(c.total) / time.Now().Sub(c.start).Seconds()
+	return float64(c.total) / time.Since(c.start).Seconds()
 }
 
 // SeekWrapper is a wrapper around io.Reader to give it a noop io.Seeker interface
@@ -143,6 +144,21 @@ func getAvg(vals []float64) float64 {
 	}
 
 	return total / float64(len(vals))
+}
+
+func getMeandAndStdDeviation(values []float64) (mean float64, stdDev float64) {
+	mean = 0.0
+	for _, duration := range values {
+		mean += duration
+	}
+	mean /= float64(len(values))
+	variance := 0.0
+	for _, duration := range values {
+		variance += math.Pow(duration-mean, 2)
+	}
+	variance /= float64(len(values))
+	stdDev = math.Sqrt(variance)
+	return mean, stdDev
 }
 
 // getRandomData returns an `length` sized array of random bytes
